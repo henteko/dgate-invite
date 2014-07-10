@@ -51,13 +51,15 @@ func getJsonString(userName string, packageName string, token string) string {
 	return string(body)
 }
 
-var ownerName string
-var packageName string
-var token string
-var userName string
-var get bool
-var invite bool
-var delete bool
+var (
+	ownerName   string
+	packageName string
+	token       string
+	userName    string
+	get         bool
+	invite      bool
+	delete      bool
+)
 
 func flagInit() {
 	flag.StringVar(&ownerName, "ownername", "", "Your DeployGate Owner Name")
