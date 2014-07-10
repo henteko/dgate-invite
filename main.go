@@ -18,6 +18,11 @@ const (
 
 const apiUrl = "https://deploygate.com/api/users"
 
+var client = httpclient.NewHttpClient(map[int]interface{}{
+	httpclient.OPT_USERAGENT: USERAGENT,
+	httpclient.OPT_TIMEOUT:   TIMEOUT,
+})
+
 func printUserName(jsonString string) {
 	data := map[string]interface{}{}
 	dec := json.NewDecoder(strings.NewReader(jsonString))
@@ -36,19 +41,25 @@ func printUserName(jsonString string) {
 	}
 }
 
-func getJsonString(userName string, packageName string, token string) string {
-	c := httpclient.NewHttpClient(map[int]interface{}{
-		httpclient.OPT_USERAGENT: USERAGENT,
-		httpclient.OPT_TIMEOUT:   TIMEOUT,
-	})
-
-	res, _ := c.Get(apiUrl+"/"+userName+"/apps/"+packageName+"/members", map[string]string{
+func getJsonString(ownerName string, packageName string, token string) string {
+	res, _ := client.Get(apiUrl+"/"+ownerName+"/apps/"+packageName+"/members", map[string]string{
 		"token": token,
 	})
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
 
 	return string(body)
+}
+
+func invitePost(ownerName string, packageName string, token string, userName string) {
+	res, _ := client.Post(apiUrl+"/"+ownerName+"/apps/"+packageName+"/members", map[string]string{
+		"token": token,
+		"users": "[" + userName + "]",
+	})
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	fmt.Println(string(body))
 }
 
 var (
@@ -85,5 +96,8 @@ func main() {
 
 	if get {
 		printUserName(getJsonString(ownerName, packageName, token))
+	}
+	if invite {
+		invitePost(ownerName, packageName, token, userName)
 	}
 }
