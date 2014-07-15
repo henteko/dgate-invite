@@ -6,8 +6,12 @@ import (
 	"fmt"
 	"github.com/ddliu/go-httpclient"
 	"github.com/jmoiron/jsonq"
+	mhttpclient "github.com/mreiferson/go-httpclient"
 	"io/ioutil"
+	"net/http"
+	"net/url"
 	"strings"
+	"time"
 )
 
 const (
@@ -16,7 +20,8 @@ const (
 	CONNECT_TIMEOUT = 5
 )
 
-const apiUrl = "https://deploygate.com/api/users"
+//const apiUrl = "https://deploygate.com/api/users"
+const apiUrl = "http://localhost:9292/api/users"
 
 var client = httpclient.NewHttpClient(map[int]interface{}{
 	httpclient.OPT_USERAGENT: USERAGENT,
@@ -62,6 +67,29 @@ func invitePost(ownerName string, packageName string, token string, userName str
 	fmt.Println(string(body))
 }
 
+func inviteDelete(ownerName string, packageName string, token string, userName string) {
+	transport := &mhttpclient.Transport{
+		ConnectTimeout:        1 * time.Second,
+		RequestTimeout:        10 * time.Second,
+		ResponseHeaderTimeout: 5 * time.Second,
+	}
+	defer transport.Close()
+
+	client := &http.Client{Transport: transport}
+	req, _ := http.NewRequest("DELETE", apiUrl+"/"+ownerName+"/apps/"+packageName+"/members", nil)
+	v := url.Values{
+		"token": {token},
+		"users": {"[" + userName + "]"},
+	}
+	req.Body = ioutil.NopCloser(strings.NewReader(v.Encode()))
+
+	res, _ := client.Do(req)
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	fmt.Println(string(body))
+}
+
 var (
 	ownerName   string
 	packageName string
@@ -99,5 +127,8 @@ func main() {
 	}
 	if invite {
 		invitePost(ownerName, packageName, token, userName)
+	}
+	if delete {
+		inviteDelete(ownerName, packageName, token, userName)
 	}
 }
