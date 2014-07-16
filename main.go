@@ -1,68 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
-	"fmt"
-	"github.com/jmoiron/jsonq"
-	"io/ioutil"
-	"strings"
 )
-
-const apiUrl = "https://deploygate.com/api/users"
-
-func printUserName(jsonString string) {
-	data := map[string]interface{}{}
-	dec := json.NewDecoder(strings.NewReader(jsonString))
-	dec.Decode(&data)
-	jq := jsonq.NewQuery(data)
-
-	apiError, _ := jq.Bool("error")
-	if apiError {
-		message, _ := jq.String("message")
-		fmt.Println("Api Error Message: " + message)
-	}
-	users, _ := jq.ArrayOfObjects("results", "users")
-
-	for _, value := range users {
-		fmt.Println(value["name"])
-	}
-}
-
-func inviteGet(ownerName string, packageName string, token string) string {
-	uri := apiUrl + "/" + ownerName + "/apps/" + packageName + "/members"
-	res, _ := httpGet(uri, map[string]string{
-		"token": token,
-	})
-	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
-
-	return string(body)
-}
-
-func invitePost(ownerName string, packageName string, token string, userName string) {
-	uri := apiUrl + "/" + ownerName + "/apps/" + packageName + "/members"
-	res, _ := httpPost(uri, map[string]string{
-		"token": token,
-		"users": "[" + userName + "]",
-	})
-	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
-
-	fmt.Println(string(body))
-}
-
-func inviteDelete(ownerName string, packageName string, token string, userName string) {
-	uri := apiUrl + "/" + ownerName + "/apps/" + packageName + "/members"
-	res, _ := httpDelete(uri, map[string]string{
-		"token": token,
-		"users": "[" + userName + "]",
-	})
-	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
-
-	fmt.Println(string(body))
-}
 
 var (
 	ownerName   string
@@ -97,12 +37,12 @@ func main() {
 	flagInit()
 
 	if get {
-		printUserName(inviteGet(ownerName, packageName, token))
+		printUsersName(inviteGet(ownerName, packageName, token))
 	}
 	if invite {
-		invitePost(ownerName, packageName, token, userName)
+		printResult(invitePost(ownerName, packageName, token, userName))
 	}
 	if delete {
-		inviteDelete(ownerName, packageName, token, userName)
+		printResult(inviteDelete(ownerName, packageName, token, userName))
 	}
 }
