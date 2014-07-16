@@ -4,27 +4,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/ddliu/go-httpclient"
 	"github.com/jmoiron/jsonq"
-	mhttpclient "github.com/mreiferson/go-httpclient"
 	"io/ioutil"
-	"net/http"
 	"strings"
-	"time"
-)
-
-const (
-	USERAGENT       = "golang deploygate cl tool"
-	TIMEOUT         = 30
-	CONNECT_TIMEOUT = 5
 )
 
 const apiUrl = "https://deploygate.com/api/users"
-
-var client = httpclient.NewHttpClient(map[int]interface{}{
-	httpclient.OPT_USERAGENT: USERAGENT,
-	httpclient.OPT_TIMEOUT:   TIMEOUT,
-})
 
 func printUserName(jsonString string) {
 	data := map[string]interface{}{}
@@ -44,8 +29,9 @@ func printUserName(jsonString string) {
 	}
 }
 
-func getJsonString(ownerName string, packageName string, token string) string {
-	res, _ := client.Get(apiUrl+"/"+ownerName+"/apps/"+packageName+"/members", map[string]string{
+func inviteGet(ownerName string, packageName string, token string) string {
+	uri := apiUrl + "/" + ownerName + "/apps/" + packageName + "/members"
+	res, _ := httpGet(uri, map[string]string{
 		"token": token,
 	})
 	defer res.Body.Close()
@@ -55,7 +41,8 @@ func getJsonString(ownerName string, packageName string, token string) string {
 }
 
 func invitePost(ownerName string, packageName string, token string, userName string) {
-	res, _ := client.Post(apiUrl+"/"+ownerName+"/apps/"+packageName+"/members", map[string]string{
+	uri := apiUrl + "/" + ownerName + "/apps/" + packageName + "/members"
+	res, _ := httpPost(uri, map[string]string{
 		"token": token,
 		"users": "[" + userName + "]",
 	})
@@ -66,21 +53,15 @@ func invitePost(ownerName string, packageName string, token string, userName str
 }
 
 func inviteDelete(ownerName string, packageName string, token string, userName string) {
-	transport := &mhttpclient.Transport{
-		ConnectTimeout:        1 * time.Second,
-		RequestTimeout:        10 * time.Second,
-		ResponseHeaderTimeout: 5 * time.Second,
-	}
-	defer transport.Close()
-
-	client := &http.Client{Transport: transport}
-	req, _ := http.NewRequest("DELETE", apiUrl+"/"+ownerName+"/apps/"+packageName+"/members?token="+token+"&users=["+userName+"]", nil)
-
-	res, _ := client.Do(req)
+	uri := apiUrl + "/" + ownerName + "/apps/" + packageName + "/members"
+	res, _ := httpDelete(uri, map[string]string{
+		"token": token,
+		"users": "[" + userName + "]",
+	})
 	defer res.Body.Close()
-	resBody, _ := ioutil.ReadAll(res.Body)
+	body, _ := ioutil.ReadAll(res.Body)
 
-	fmt.Println(string(resBody))
+	fmt.Println(string(body))
 }
 
 var (
@@ -116,7 +97,7 @@ func main() {
 	flagInit()
 
 	if get {
-		printUserName(getJsonString(ownerName, packageName, token))
+		printUserName(inviteGet(ownerName, packageName, token))
 	}
 	if invite {
 		invitePost(ownerName, packageName, token, userName)
