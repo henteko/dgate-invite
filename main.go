@@ -12,6 +12,8 @@ var (
 	get         bool
 	invite      bool
 	delete      bool
+	login       bool
+	logout      bool
 )
 
 func flagInit() {
@@ -30,19 +32,29 @@ func flagInit() {
 	flag.BoolVar(&delete, "delete", false, "Your DeployGate App Package Name")
 	flag.BoolVar(&delete, "d", false, "Your DeployGate App Package Name")
 
+	flag.BoolVar(&login, "login", false, "Your DeployGate App Package Name")
+	flag.BoolVar(&logout, "logout", false, "Your DeployGate App Package Name")
+
 	flag.Parse()
 }
 
 func main() {
 	flagInit()
 
-	if get {
-		printUsersName(inviteGet(ownerName, packageName, token))
-	}
-	if invite {
-		printResult(invitePost(ownerName, packageName, token, userName))
-	}
-	if delete {
-		printResult(inviteDelete(ownerName, packageName, token, userName))
+	if checkLogin() {
+		name, loginToken := getSettings()
+		if login {
+			dgateLogin(ownerName, token)
+		} else if logout {
+			dgateLogout(name)
+		} else if get {
+			printUsersName(inviteGet(name, packageName, loginToken))
+		} else if invite {
+			printResult(invitePost(name, packageName, loginToken, userName))
+		} else if delete {
+			printResult(inviteDelete(name, packageName, loginToken, userName))
+		}
+	} else {
+		dgateLogin(ownerName, token)
 	}
 }

@@ -6,16 +6,58 @@ import (
 	"fmt"
 	"github.com/jmoiron/jsonq"
 	"io/ioutil"
+	"os"
 	"strings"
 )
 
 const apiUrl = "https://deploygate.com/api/users"
 
 func stringToJsonq(jsonString string) *jsonq.JsonQuery {
+	fmt.Println(jsonString)
 	data := map[string]interface{}{}
 	dec := json.NewDecoder(strings.NewReader(jsonString))
 	dec.Decode(&data)
-	return jsonq.NewQuery(data)
+	json := jsonq.NewQuery(data)
+	return json
+}
+
+func getSettingFilePath() string {
+	return os.Getenv("HOME") + "/.dgate"
+}
+
+func getSettings() (string, string) {
+	settingFile := getSettingFilePath()
+	fileByte, err := ioutil.ReadFile(settingFile)
+	if err != nil {
+		return "", ""
+	}
+	json := stringToJsonq(string(fileByte))
+	name, _ := json.String("name")
+	token, _ := json.String("token")
+
+	return name, token
+}
+
+func checkLogin() bool {
+	name, token := getSettings()
+	return name != "" && token != ""
+}
+
+func writeSettingFile(settings string) {
+	settingFile := getSettingFilePath()
+	ioutil.WriteFile(settingFile, []byte(settings), 0644)
+}
+
+func dgateLogin(name string, token string) {
+	settings := `{"name":"` + name + `","token":"` + token + `"}`
+	writeSettingFile(settings)
+	fmt.Println("Login Success!")
+}
+
+func dgateLogout(name string) {
+	settings := `{"name":"` + name + `","token":""}`
+	writeSettingFile(settings)
+	fmt.Println("Logout Success!")
 }
 
 func checkError(jsonString string) error {
