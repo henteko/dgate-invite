@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,7 +14,6 @@ import (
 const apiUrl = "https://deploygate.com/api/users"
 
 func stringToJsonq(jsonString string) *jsonq.JsonQuery {
-	fmt.Println(jsonString)
 	data := map[string]interface{}{}
 	dec := json.NewDecoder(strings.NewReader(jsonString))
 	dec.Decode(&data)
@@ -48,7 +48,17 @@ func writeSettingFile(settings string) {
 	ioutil.WriteFile(settingFile, []byte(settings), 0644)
 }
 
-func dgateLogin(name string, token string) {
+func dgateLogin() {
+	scanner := bufio.NewScanner(os.Stdin)
+
+	fmt.Print("Owner Name: ")
+	scanner.Scan()
+	name := scanner.Text()
+
+	fmt.Print("Your Token: ")
+	scanner.Scan()
+	token := scanner.Text()
+
 	settings := `{"name":"` + name + `","token":"` + token + `"}`
 	writeSettingFile(settings)
 	fmt.Println("Login Success!")
