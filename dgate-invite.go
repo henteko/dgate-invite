@@ -7,7 +7,7 @@ import (
 
 func main() {
 	var (
-		packageName = flag.String("p", "", "Yout DeployGate App Package Name")
+		packageName = flag.String("p", "", "Your DeployGate App Package Name")
 		getFlag     = flag.Bool("g", false, "Get App member")
 		inviteFlag  = flag.Bool("i", false, "Invite Target User for App member")
 		deleteFlag  = flag.Bool("d", false, "Delete Target User for App member")
