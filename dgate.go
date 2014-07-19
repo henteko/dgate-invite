@@ -137,9 +137,13 @@ func getUri(ownerName string, packageName string, token string) string {
 
 func inviteGet(ownerName string, packageName string, token string) string {
 	uri := getUri(ownerName, packageName, token)
-	res, _ := httpGet(uri, map[string]string{
+	res, err := httpGet(uri, map[string]string{
 		"token": token,
 	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
 
@@ -148,10 +152,14 @@ func inviteGet(ownerName string, packageName string, token string) string {
 
 func invitePost(ownerName string, packageName string, token string, userNames []string) string {
 	uri := getUri(ownerName, packageName, token)
-	res, _ := httpPost(uri, map[string]string{
+	res, err := httpPost(uri, map[string]string{
 		"token": token,
 		"users": getUserNamesString(userNames),
 	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
 
@@ -160,10 +168,14 @@ func invitePost(ownerName string, packageName string, token string, userNames []
 
 func inviteDelete(ownerName string, packageName string, token string, userNames []string) string {
 	uri := getUri(ownerName, packageName, token)
-	res, _ := httpDelete(uri, map[string]string{
+	res, err := httpDelete(uri, map[string]string{
 		"token": token,
 		"users": getUserNamesString(userNames),
 	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
 
