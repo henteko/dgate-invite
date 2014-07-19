@@ -1,6 +1,10 @@
 # dgate-invite
 
+[![Build Status](https://drone.io/github.com/henteko/dgate-invite/status.png)](https://drone.io/github.com/henteko/dgate-invite/latest)  
 dgate-invite is [DeployGate Invite API](https://deploygate.com/docs/api) CLI tool
+
+## Download
+[dgate-invite download page](https://drone.io/github.com/henteko/dgate-invite/files)
 
 ## How to use
 ### login
