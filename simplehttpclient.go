@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"github.com/mreiferson/go-httpclient"
 	"io"
 	"mime/multipart"
@@ -18,6 +19,7 @@ func httpGet(uri string, params map[string]string) (*http.Response, error) {
 		ConnectTimeout:        1 * time.Second,
 		RequestTimeout:        10 * time.Second,
 		ResponseHeaderTimeout: 5 * time.Second,
+		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
 	}
 	defer transport.Close()
 
@@ -32,6 +34,7 @@ func httpPost(uri string, params map[string]string) (*http.Response, error) {
 		ConnectTimeout:        1 * time.Second,
 		RequestTimeout:        10 * time.Second,
 		ResponseHeaderTimeout: 5 * time.Second,
+		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
 	}
 	defer transport.Close()
 
@@ -49,6 +52,7 @@ func httpFilesPost(uri string, params map[string]string, filePaths map[string]st
 		ConnectTimeout:        1 * time.Second,
 		RequestTimeout:        10 * time.Second,
 		ResponseHeaderTimeout: 5 * time.Second,
+		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
 	}
 	defer transport.Close()
 
