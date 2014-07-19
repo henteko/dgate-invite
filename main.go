@@ -8,16 +8,16 @@ import (
 func main() {
 	var (
 		packageName = flag.String("p", "", "Yout DeployGate App Package Name")
-		userName    = flag.String("u", "", "Invite Target User Name")
 		getFlag     = flag.Bool("g", false, "Get App member")
 		inviteFlag  = flag.Bool("i", false, "Invite Target User for App member")
 		deleteFlag  = flag.Bool("d", false, "Delete Target User for App member")
-		loginFlag   = flag.Bool("login", false, "DeployGate Login")
-		logoutFlag  = flag.Bool("logout", false, "DeployGate Logout")
+
+		loginFlag  = flag.Bool("login", false, "DeployGate Login")
+		logoutFlag = flag.Bool("logout", false, "DeployGate Logout")
 	)
 	flag.Parse()
 
-	if checkLogin() {
+	if isLogin() {
 		name, loginToken := getSettings()
 		if *loginFlag {
 			dgateLogin()
@@ -26,9 +26,17 @@ func main() {
 		} else if *getFlag {
 			printUsersName(inviteGet(name, *packageName, loginToken))
 		} else if *inviteFlag {
-			printResult(invitePost(name, *packageName, loginToken, *userName))
+			if len(flag.Args()) == 0 {
+				fmt.Println("Please input target user name")
+				return
+			}
+			printResult(invitePost(name, *packageName, loginToken, flag.Args()))
 		} else if *deleteFlag {
-			printResult(inviteDelete(name, *packageName, loginToken, *userName))
+			if len(flag.Args()) == 0 {
+				fmt.Println("Please input target user name")
+				return
+			}
+			printResult(inviteDelete(name, *packageName, loginToken, flag.Args()))
 		}
 	} else {
 		fmt.Println("Please Login")

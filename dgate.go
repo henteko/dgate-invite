@@ -2,12 +2,14 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/jmoiron/jsonq"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -38,7 +40,7 @@ func getSettings() (string, string) {
 	return name, token
 }
 
-func checkLogin() bool {
+func isLogin() bool {
 	name, token := getSettings()
 	return name != "" && token != ""
 }
@@ -117,6 +119,18 @@ func printResult(jsonString string) {
 	}
 }
 
+func getUserNamesString(userNames []string) string {
+	var nameBuffer bytes.Buffer
+	for _, name := range userNames {
+		nameBuffer.WriteString("," + name)
+	}
+	names := nameBuffer.String()
+	re, _ := regexp.Compile("^,")
+	names = re.ReplaceAllString(names, "")
+
+	return "[" + names + "]"
+}
+
 func getUri(ownerName string, packageName string, token string) string {
 	return apiUrl + "/" + ownerName + "/apps/" + packageName + "/members"
 }
@@ -132,11 +146,11 @@ func inviteGet(ownerName string, packageName string, token string) string {
 	return string(body)
 }
 
-func invitePost(ownerName string, packageName string, token string, userName string) string {
+func invitePost(ownerName string, packageName string, token string, userNames []string) string {
 	uri := getUri(ownerName, packageName, token)
 	res, _ := httpPost(uri, map[string]string{
 		"token": token,
-		"users": "[" + userName + "]",
+		"users": getUserNamesString(userNames),
 	})
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
@@ -144,11 +158,11 @@ func invitePost(ownerName string, packageName string, token string, userName str
 	return string(body)
 }
 
-func inviteDelete(ownerName string, packageName string, token string, userName string) string {
+func inviteDelete(ownerName string, packageName string, token string, userNames []string) string {
 	uri := getUri(ownerName, packageName, token)
 	res, _ := httpDelete(uri, map[string]string{
 		"token": token,
-		"users": "[" + userName + "]",
+		"users": getUserNamesString(userNames),
 	})
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
