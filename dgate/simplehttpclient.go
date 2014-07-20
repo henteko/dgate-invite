@@ -91,6 +91,7 @@ func httpDelete(uri string, params map[string]string) (*http.Response, error) {
 		ConnectTimeout:        1 * time.Second,
 		RequestTimeout:        10 * time.Second,
 		ResponseHeaderTimeout: 5 * time.Second,
+		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
 	}
 	defer transport.Close()
 
