@@ -15,17 +15,9 @@ import (
 
 const apiUrl = "https://deploygate.com/api/users"
 
-func stringToJsonq(jsonString string) *jsonq.JsonQuery {
-	data := map[string]interface{}{}
-	dec := json.NewDecoder(strings.NewReader(jsonString))
-	dec.Decode(&data)
-	json := jsonq.NewQuery(data)
-	return json
-}
-
-func getSettingFilePath() string {
-	return os.Getenv("HOME") + "/.dgate"
-}
+/***********************
+* Public Methods
+************************/
 
 func GetSettings() (string, string) {
 	settingFile := getSettingFilePath()
@@ -43,11 +35,6 @@ func GetSettings() (string, string) {
 func IsLogin() bool {
 	name, token := GetSettings()
 	return name != "" && token != ""
-}
-
-func writeSettingFile(settings string) {
-	settingFile := getSettingFilePath()
-	ioutil.WriteFile(settingFile, []byte(settings), 0644)
 }
 
 func Login() {
@@ -70,6 +57,74 @@ func Logout(name string) {
 	settings := `{"name":"` + name + `","token":""}`
 	writeSettingFile(settings)
 	fmt.Println("Logout Success!")
+}
+
+func InviteGet(ownerName string, packageName string, token string) string {
+	uri := getUri(ownerName, packageName, token)
+	res, err := httpGet(uri, map[string]string{
+		"token": token,
+	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	return string(body)
+}
+
+func InvitePost(ownerName string, packageName string, token string, userNames []string) string {
+	uri := getUri(ownerName, packageName, token)
+	res, err := httpPost(uri, map[string]string{
+		"token": token,
+		"users": getUserNamesString(userNames),
+	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	return string(body)
+}
+
+func InviteDelete(ownerName string, packageName string, token string, userNames []string) string {
+	uri := getUri(ownerName, packageName, token)
+	res, err := httpDelete(uri, map[string]string{
+		"token": token,
+		"users": getUserNamesString(userNames),
+	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	return string(body)
+}
+
+/***********************
+* Private Methods
+************************/
+
+func stringToJsonq(jsonString string) *jsonq.JsonQuery {
+	data := map[string]interface{}{}
+	dec := json.NewDecoder(strings.NewReader(jsonString))
+	dec.Decode(&data)
+	json := jsonq.NewQuery(data)
+	return json
+}
+
+func getSettingFilePath() string {
+	return os.Getenv("HOME") + "/.dgate"
+}
+
+func writeSettingFile(settings string) {
+	settingFile := getSettingFilePath()
+	ioutil.WriteFile(settingFile, []byte(settings), 0644)
 }
 
 func checkError(jsonString string) error {
@@ -133,51 +188,4 @@ func getUserNamesString(userNames []string) string {
 
 func getUri(ownerName string, packageName string, token string) string {
 	return apiUrl + "/" + ownerName + "/apps/" + packageName + "/members"
-}
-
-func InviteGet(ownerName string, packageName string, token string) string {
-	uri := getUri(ownerName, packageName, token)
-	res, err := httpGet(uri, map[string]string{
-		"token": token,
-	})
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
-
-	return string(body)
-}
-
-func InvitePost(ownerName string, packageName string, token string, userNames []string) string {
-	uri := getUri(ownerName, packageName, token)
-	res, err := httpPost(uri, map[string]string{
-		"token": token,
-		"users": getUserNamesString(userNames),
-	})
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
-
-	return string(body)
-}
-
-func InviteDelete(ownerName string, packageName string, token string, userNames []string) string {
-	uri := getUri(ownerName, packageName, token)
-	res, err := httpDelete(uri, map[string]string{
-		"token": token,
-		"users": getUserNamesString(userNames),
-	})
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
-
-	return string(body)
 }
