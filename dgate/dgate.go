@@ -1,4 +1,4 @@
-package main
+package dgate
 
 import (
 	"bufio"
@@ -27,7 +27,7 @@ func getSettingFilePath() string {
 	return os.Getenv("HOME") + "/.dgate"
 }
 
-func getSettings() (string, string) {
+func GetSettings() (string, string) {
 	settingFile := getSettingFilePath()
 	fileByte, err := ioutil.ReadFile(settingFile)
 	if err != nil {
@@ -40,8 +40,8 @@ func getSettings() (string, string) {
 	return name, token
 }
 
-func isLogin() bool {
-	name, token := getSettings()
+func IsLogin() bool {
+	name, token := GetSettings()
 	return name != "" && token != ""
 }
 
@@ -50,7 +50,7 @@ func writeSettingFile(settings string) {
 	ioutil.WriteFile(settingFile, []byte(settings), 0644)
 }
 
-func dgateLogin() {
+func Login() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	fmt.Print("Owner Name: ")
@@ -66,7 +66,7 @@ func dgateLogin() {
 	fmt.Println("Login Success!")
 }
 
-func dgateLogout(name string) {
+func Logout(name string) {
 	settings := `{"name":"` + name + `","token":""}`
 	writeSettingFile(settings)
 	fmt.Println("Logout Success!")
@@ -100,14 +100,14 @@ func getUsersName(jsonString string) []string {
 	return result
 }
 
-func printUsersName(jsonString string) {
+func PrintUsersName(jsonString string) {
 	users := getUsersName(jsonString)
 	for _, user := range users {
 		fmt.Println(user)
 	}
 }
 
-func printResult(jsonString string) {
+func PrintResult(jsonString string) {
 	err := checkError(jsonString)
 	if err != nil {
 		fmt.Println(err)
@@ -135,7 +135,7 @@ func getUri(ownerName string, packageName string, token string) string {
 	return apiUrl + "/" + ownerName + "/apps/" + packageName + "/members"
 }
 
-func inviteGet(ownerName string, packageName string, token string) string {
+func InviteGet(ownerName string, packageName string, token string) string {
 	uri := getUri(ownerName, packageName, token)
 	res, err := httpGet(uri, map[string]string{
 		"token": token,
@@ -150,7 +150,7 @@ func inviteGet(ownerName string, packageName string, token string) string {
 	return string(body)
 }
 
-func invitePost(ownerName string, packageName string, token string, userNames []string) string {
+func InvitePost(ownerName string, packageName string, token string, userNames []string) string {
 	uri := getUri(ownerName, packageName, token)
 	res, err := httpPost(uri, map[string]string{
 		"token": token,
@@ -166,7 +166,7 @@ func invitePost(ownerName string, packageName string, token string, userNames []
 	return string(body)
 }
 
-func inviteDelete(ownerName string, packageName string, token string, userNames []string) string {
+func InviteDelete(ownerName string, packageName string, token string, userNames []string) string {
 	uri := getUri(ownerName, packageName, token)
 	res, err := httpDelete(uri, map[string]string{
 		"token": token,

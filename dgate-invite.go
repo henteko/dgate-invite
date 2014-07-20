@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/henteko/dgate-invite/dgate"
 )
 
 func main() {
@@ -17,29 +18,29 @@ func main() {
 	)
 	flag.Parse()
 
-	if isLogin() {
-		name, loginToken := getSettings()
+	if dgate.IsLogin() {
+		name, loginToken := dgate.GetSettings()
 		if *loginFlag {
-			dgateLogin()
+			dgate.Login()
 		} else if *logoutFlag {
-			dgateLogout(name)
+			dgate.Logout(name)
 		} else if *getFlag {
-			printUsersName(inviteGet(name, *packageName, loginToken))
+			dgate.PrintUsersName(dgate.InviteGet(name, *packageName, loginToken))
 		} else if *inviteFlag {
 			if len(flag.Args()) == 0 {
 				fmt.Println("Please input target user name")
 				return
 			}
-			printResult(invitePost(name, *packageName, loginToken, flag.Args()))
+			dgate.PrintResult(dgate.InvitePost(name, *packageName, loginToken, flag.Args()))
 		} else if *deleteFlag {
 			if len(flag.Args()) == 0 {
 				fmt.Println("Please input target user name")
 				return
 			}
-			printResult(inviteDelete(name, *packageName, loginToken, flag.Args()))
+			dgate.PrintResult(dgate.InviteDelete(name, *packageName, loginToken, flag.Args()))
 		}
 	} else {
 		fmt.Println("Please Login")
-		dgateLogin()
+		dgate.Login()
 	}
 }
